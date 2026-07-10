@@ -1,4 +1,4 @@
-FROM alpine:3.19.1
+FROM alpine:3.24.1
 
 LABEL maintainer="alexey@pristavk.in"
 
@@ -15,9 +15,12 @@ ENV SHUTDOWN_CMD="echo 'System shutdown not configured!'"
 RUN set -ex; \
 	# run dependencies
 	apk add --no-cache \
-		openssh-client \
+		bash \
+		govc \
 		libusb-compat \
-		nut ;\
+		nut \
+		nut-bash-completion \
+		openssh-client ;\
 	# make run directory
 	install -d -m 750 -o nut -g nut /var/run/nut
 
