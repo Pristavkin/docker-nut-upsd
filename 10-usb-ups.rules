@@ -1,0 +1,4 @@
+# /etc/udev/rules.d/10-usb-ups.rules
+# ENV{DEVTYPE}=="usb_device" avoids one RUN+= per USB interface; docker-nut-upsd.sh logs to the journal itself.
+ACTION=="add", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="051d", ATTRS{idProduct}=="0002", RUN+="/srv/nut-upsd/docker-nut-upsd.sh start"
+ACTION=="remove", SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTRS{idVendor}=="051d", ATTRS{idProduct}=="0002", RUN+="/srv/nut-upsd/docker-nut-upsd.sh stop"
