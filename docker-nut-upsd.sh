@@ -33,15 +33,6 @@ HOST_PORT="${HOST_PORT:-3493}"
 
 UPS_DEVICE_PATH=""
 
-# Prevent overlapping start/stop invocations (e.g. a multi-interface USB
-# device firing several udev "add" events back to back).
-LOCK_FILE="/var/run/docker-nut-upsd.lock"
-exec 200>"$LOCK_FILE"
-if ! flock -n 200; then
-    echo "Another docker-nut-upsd.sh invocation is already running, exiting."
-    exit 0
-fi
-
 # Find the device path based on vendor ID and device ID (HID device)
 get_device_path() {
     local device_info
