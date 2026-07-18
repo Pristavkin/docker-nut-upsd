@@ -73,6 +73,18 @@ start_container() {
         exit 0
     fi
 
+    # SHUTDOWN_CMD is optional. When set, mount scripts/ (the operator's own
+    # shutdown scripts, kept out of git -- see scripts/*.example) into the
+    # container so that path is reachable. When unset, skip the mount
+    # entirely and let the image fall back to its built-in no-op default.
+    local -a shutdown_args=()
+    if [ -n "${SHUTDOWN_CMD:-}" ]; then
+        shutdown_args=(
+            -v "$SCRIPT_DIR/scripts:/scripts:ro"
+            -e SHUTDOWN_CMD="$SHUTDOWN_CMD"
+        )
+    fi
+
     echo "Starting Docker container for UPS monitoring..."
     docker run -d \
         --name "$CONTAINER_NAME" \
@@ -83,6 +95,7 @@ start_container() {
         -e ADMIN_PASSWORD="$ADMIN_PASSWORD" \
         -e API_PASSWORD="$API_PASSWORD" \
         -e UPS_DESC="$UPS_DESC" \
+        "${shutdown_args[@]}" \
         -p "0.0.0.0:${HOST_PORT}:3493/tcp" \
         "$DOCKER_IMAGE"
     echo "Docker container started with device $UPS_DEVICE_PATH mounted."

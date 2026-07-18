@@ -1,0 +1,21 @@
+#!/bin/sh
+# Example NUT SHUTDOWNCMD: gracefully shut down a macOS host over SSH.
+#
+# Setup:
+#   1. Generate a dedicated key pair (no passphrase, since this runs
+#      unattended): ssh-keygen -t ed25519 -f ./scripts/mac-shutdown-key -N ""
+#   2. Copy the public key to the Mac:
+#      ssh-copy-id -i ./scripts/mac-shutdown-key.pub admin@mac.example.local
+#   3. On the Mac, allow that user to run shutdown without a password:
+#      echo 'admin ALL=(ALL) NOPASSWD: /sbin/shutdown' | sudo tee /etc/sudoers.d/nut-shutdown
+#   4. Copy this file to shutdown-macos.sh (kept out of git via
+#      .gitignore), fill in real values below, then in .env set:
+#      SHUTDOWN_CMD="/scripts/shutdown-macos.sh"
+set -eu
+
+MAC_HOST="mac.example.local"
+MAC_USER="admin"
+MAC_SSH_KEY="/scripts/mac-shutdown-key"
+
+ssh -o BatchMode=yes -o StrictHostKeyChecking=accept-new -i "$MAC_SSH_KEY" \
+    "${MAC_USER}@${MAC_HOST}" 'sudo shutdown -h now'

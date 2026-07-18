@@ -1,0 +1,36 @@
+#!/bin/sh
+# Example NUT SHUTDOWNCMD: shut down an ESXi host, using govc (the vSphere
+# CLI already installed in this image).
+#
+# This deliberately issues a single forced host shutdown rather than
+# looping over VMs first: this container may itself be running on a VM on
+# that host, so a script that shuts down other VMs before the host can be
+# killed mid-run before it ever reaches the host.shutdown call. `-f` shuts
+# the host down even with VMs still running -- see `govc host.shutdown -h`
+# ("-f  Force shutdown when host is not in maintenance mode").
+#
+# For that forced shutdown to gracefully stop guest OSes (instead of
+# hard-powering them off) rather than looping VMs manually here, configure
+# the "Stop Action" per VM once on the host itself: Host > Configure >
+# Virtual Machines > VM Startup/Shutdown (autostart), where each VM can be
+# set to "Guest Shutdown" (requires VMware Tools) with a delay. See:
+# https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere/8-0/vsphere-virtual-machine-administration/managing-virtual-machinesvsphere-vm-admin/edit-vm-startup-and-shutdown-settingsvsphere-vm-admin.html
+#
+# Caveat: that autostart policy is disabled on hosts in an HA-enabled
+# cluster, so on such a cluster this forced shutdown will hard-power-off
+# VMs instead of gracefully stopping their guest OS.
+#
+# Setup:
+#   1. Create a dedicated ESXi user with just enough privilege to shut down
+#      the host (Host.Config.Shutdown), rather than reusing root.
+#   2. Copy this file to shutdown-esxi.sh (kept out of git via
+#      .gitignore), fill in real values below, then in .env set:
+#      SHUTDOWN_CMD="/scripts/shutdown-esxi.sh"
+set -eu
+
+export GOVC_URL="https://esxi.example.local"
+export GOVC_USERNAME="shutdown-svc"
+export GOVC_PASSWORD="change-me"
+export GOVC_INSECURE=1
+
+govc host.shutdown -f

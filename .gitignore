@@ -1,1 +1,7 @@
 .env
+
+# Real shutdown scripts (and any keys/credentials they need) are private,
+# host-specific, and dropped in by the operator -- only the .example
+# templates are tracked.
+scripts/*
+!scripts/*.example
